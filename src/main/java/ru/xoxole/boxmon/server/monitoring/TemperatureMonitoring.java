@@ -16,15 +16,14 @@ import java.util.List;
 @Component
 public class TemperatureMonitoring extends Monitoring {
 
-    private final MonitoringParametersService monitoringParametersService;
 
     private Double minTemp;
 
     private Double maxTemp;
 
     public TemperatureMonitoring(EspDataService espDataService, BoxMonTelegramBot boxMonTelegramBot, MonitoringParametersService monitoringParametersService) {
-        super(espDataService, boxMonTelegramBot);
-        this.monitoringParametersService = monitoringParametersService;
+        super(espDataService, boxMonTelegramBot, monitoringParametersService);
+        super.setName("TemperatureMonitoring");
     }
 
     @PostConstruct
@@ -53,22 +52,39 @@ public class TemperatureMonitoring extends Monitoring {
                     .allMatch(temp -> temp < maxTemp && temp > minTemp);
         }
 
-        String normParamsDesc = "\nМинимально допустимая: " + minTemp + "\nМаксимально допустимая: " + maxTemp;
+        String normParamsDesc = normParamsDesc();
         if (isOk) {
             if (status.equals(MonotoringStatus.PROBLEM)) {
                 status = MonotoringStatus.OK;
-                boxMonTelegramBot.sendMessageToPrivateChat(status + " Температура в норме. \nТекущая температура: "
+                boxMonTelegramBot.sendMessageToPrivateChat(getName() + ": " +status +"\nТемпература в норме. \nТекущая температура: "
                         + espDataService.getLastEspData().getTemperature() + normParamsDesc);
             }
         } else {
             if (status.equals(MonotoringStatus.OK)) {
                 status = MonotoringStatus.PROBLEM;
-                boxMonTelegramBot.sendMessageToPrivateChat(status + " Температура не в норме течении часа! \nТекущая температура: "
+                boxMonTelegramBot.sendMessageToPrivateChat(getName() + ": " +status + "\nТемпература не в норме течении часа! \nТекущая температура: "
                         + espDataService.getLastEspData().getTemperature() + normParamsDesc);
             }
         }
         log.info("Check temperature. Status:" + status);
 
+    }
+
+    @Override
+    public String getTextStatus() {
+        String normParamsDesc = normParamsDesc();
+        Double temp = espDataService.getLastEspData().getTemperature();
+        if (status.equals(MonotoringStatus.OK)) {
+            return getName() + ": " +status + "\nТемпература в норме. \nТекущая температура: " + temp + normParamsDesc;
+        }
+        if (status.equals(MonotoringStatus.PROBLEM)) {
+            return getName() + ": " + status + "\nТемпература не в норме течении часа! \nТекущая температура: " + temp + normParamsDesc;
+        }
+        return status.toString();
+    }
+
+    private String normParamsDesc() {
+        return "\nМинимально допустимая: " + minTemp + "\nМаксимально допустимая: " + maxTemp;
     }
 
 }

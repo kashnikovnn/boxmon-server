@@ -25,6 +25,7 @@ public class MonitoringParametersService {
         monitoringParameters.setMinHumidity(25d);
         monitoringParameters.setMaxTemperature(28d);
         monitoringParameters.setMinTemperature(24d);
+        monitoringParameters.setNoDataMinutes(60);
         return monitoringParametersRepository.saveAndFlush(monitoringParameters);
     }
 }

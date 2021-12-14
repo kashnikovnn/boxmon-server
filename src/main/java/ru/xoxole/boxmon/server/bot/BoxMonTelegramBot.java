@@ -1,9 +1,7 @@
 package ru.xoxole.boxmon.server.bot;
 
-import lombok.AllArgsConstructor;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 import org.telegram.telegrambots.bots.TelegramLongPollingBot;
@@ -11,8 +9,8 @@ import org.telegram.telegrambots.meta.api.methods.send.SendMessage;
 import org.telegram.telegrambots.meta.api.objects.Update;
 import org.telegram.telegrambots.meta.api.objects.replykeyboard.ReplyKeyboardMarkup;
 import org.telegram.telegrambots.meta.api.objects.replykeyboard.buttons.KeyboardRow;
-import org.telegram.telegrambots.meta.exceptions.TelegramApiException;
 import ru.xoxole.boxmon.server.service.EspDataService;
+import ru.xoxole.boxmon.server.service.MonitoringService;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -27,19 +25,24 @@ public class BoxMonTelegramBot extends TelegramLongPollingBot {
 
     private final String privateChatId;
 
+    private final EspDataService espDataService;
+
+    private final MonitoringService monitoringService;
+
     public BoxMonTelegramBot(@Value("${telegram.bot.username}")
                                      String botUserName,
                              @Value("${telegram.bot.token}")
                                      String token,
                              @Value("${telegram.privatechat.id}")
-                                     String privateChatId, EspDataService espDataService) {
+                                     String privateChatId, EspDataService espDataService, MonitoringService monitoringService) {
         this.botUserName = botUserName;
         this.token = token;
         this.privateChatId = privateChatId;
         this.espDataService = espDataService;
+        this.monitoringService = monitoringService;
     }
 
-    private final EspDataService espDataService;
+
 
     @Override
     public String getBotToken() {
@@ -59,6 +62,10 @@ public class BoxMonTelegramBot extends TelegramLongPollingBot {
 
             if (update.getMessage().getText().trim().equals("/status")) {
                 getStatus();
+            }
+
+            if (update.getMessage().getText().trim().equals("/monitorings")) {
+                getAllMonitoringsReport();
             }
 
         }
@@ -82,6 +89,11 @@ public class BoxMonTelegramBot extends TelegramLongPollingBot {
         sendMessageToPrivateChat(espDataService.getLastEspData().toString());
     }
 
+    public void getAllMonitoringsReport() {
+        monitoringService.getAllMonitoringsReports()
+                .forEach(this::sendMessageToPrivateChat);
+    }
+
     @SneakyThrows
     private void sendMenu(){
         SendMessage sendMessage = new SendMessage();
@@ -99,6 +111,7 @@ public class BoxMonTelegramBot extends TelegramLongPollingBot {
         // Добавляем кнопки в первую строчку клавиатуры
         keyboardFirstRow.add("/start");
         keyboardFirstRow.add("/status");
+        keyboardFirstRow.add("/monitorings");
 
         // Вторая строчка клавиатуры
 //        KeyboardRow keyboardSecondRow = new KeyboardRow();

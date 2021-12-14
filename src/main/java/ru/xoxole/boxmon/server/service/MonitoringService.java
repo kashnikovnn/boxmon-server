@@ -1,5 +1,6 @@
 package ru.xoxole.boxmon.server.service;
 
+import org.springframework.context.annotation.Lazy;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 import ru.xoxole.boxmon.server.bot.BoxMonTelegramBot;
@@ -11,6 +12,7 @@ import ru.xoxole.boxmon.server.monitoring.TemperatureMonitoring;
 import javax.annotation.PostConstruct;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Collectors;
 
 @Service
 public class MonitoringService {
@@ -20,7 +22,7 @@ public class MonitoringService {
 
     private static List<Monitoring> monitorings = new ArrayList<>();
 
-    public MonitoringService(BoxMonTelegramBot boxMonTelegramBot, EspDataService espDataService) {
+    public MonitoringService(@Lazy BoxMonTelegramBot boxMonTelegramBot, EspDataService espDataService) {
         this.boxMonTelegramBot = boxMonTelegramBot;
         this.espDataService = espDataService;
     }
@@ -35,5 +37,9 @@ public class MonitoringService {
         monitorings.add(monitoring);
     }
 
+    public List<String> getAllMonitoringsReports(){
+        return monitorings.stream().map(Monitoring::getTextStatus)
+                .collect(Collectors.toList());
+    }
 
 }
