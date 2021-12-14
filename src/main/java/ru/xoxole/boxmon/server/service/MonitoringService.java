@@ -13,37 +13,26 @@ import java.util.ArrayList;
 import java.util.List;
 
 @Service
-public class CronMonitoringService {
+public class MonitoringService {
 
     private final BoxMonTelegramBot boxMonTelegramBot;
     private final EspDataService espDataService;
 
-    private List<Monitoring> monitorings = new ArrayList<>();
+    private static List<Monitoring> monitorings = new ArrayList<>();
 
-    public CronMonitoringService(BoxMonTelegramBot boxMonTelegramBot, EspDataService espDataService) {
+    public MonitoringService(BoxMonTelegramBot boxMonTelegramBot, EspDataService espDataService) {
         this.boxMonTelegramBot = boxMonTelegramBot;
         this.espDataService = espDataService;
     }
 
-    @PostConstruct
-    private void initMonitorings() {
-        TemperatureMonitoring temperatureMonitoring = new TemperatureMonitoring(espDataService,
-                boxMonTelegramBot,
-                MonotoringStatus.OK,
-                25d,
-                29d);
-        HumidityMonitoring humidityMonitoring = new HumidityMonitoring(espDataService,
-                boxMonTelegramBot,
-                MonotoringStatus.OK,
-                35d,
-                60d);
-        monitorings.add(humidityMonitoring);
-        monitorings.add(temperatureMonitoring);
-    }
 
     @Scheduled(fixedDelay = 300000)
     public void checkMonitorings() {
         monitorings.forEach(Monitoring::doCheck);
+    }
+
+    public static void registerMonitoring(Monitoring monitoring){
+        monitorings.add(monitoring);
     }
 
 
