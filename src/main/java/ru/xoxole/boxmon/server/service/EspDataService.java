@@ -22,4 +22,8 @@ public class EspDataService {
         Date date = new Date(new Date().getTime() - hours*60*60*1000);
         return espDataRepository.findAllByCreateDateAfter(date);
     }
+
+    public EspData getLastEspData(){
+        return espDataRepository.getLastEspData().stream().findFirst().get();
+    }
 }

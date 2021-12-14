@@ -8,11 +8,13 @@ import org.springframework.data.annotation.CreatedDate;
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
+import javax.persistence.Table;
 import java.sql.Time;
 import java.util.Date;
 
 @Data
-@Entity(name = "esp_data")
+@Entity
+@Table(name = "esp_data")
 public class EspData {
 
     @Id
